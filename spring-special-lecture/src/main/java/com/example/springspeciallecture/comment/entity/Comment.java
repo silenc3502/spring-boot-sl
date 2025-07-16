@@ -36,6 +36,14 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    public void markAsDeleted() {
+        this.deleted = true;
+        this.content = "삭제된 댓글입니다.";
+    }
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createDate;

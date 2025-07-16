@@ -11,9 +11,11 @@ import com.example.springspeciallecture.comment.repository.CommentRepository;
 import com.example.springspeciallecture.comment.service.request.CreateCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListChildCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListTopLevelCommentRequest;
+import com.example.springspeciallecture.comment.service.request.UpdateCommentRequest;
 import com.example.springspeciallecture.comment.service.response.CreateCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListChildCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListTopLevelCommentResponse;
+import com.example.springspeciallecture.comment.service.response.UpdateCommentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -94,4 +96,33 @@ public class CommentServiceImpl implements CommentService {
         );
     }
 
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId, Long accountId) {
+        Comment comment = commentRepository.findByIdAndDeletedFalse(commentId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않거나 이미 삭제된 댓글입니다."));
+
+        if (!comment.getWriter().getAccount().getId().equals(accountId)) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        comment.markAsDeleted();
+        commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional
+    public UpdateCommentResponse updateComment(UpdateCommentRequest request) {
+        Comment comment = commentRepository.findByIdAndDeletedFalse(request.getCommentId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않거나 삭제된 댓글입니다."));
+
+        if (!comment.getWriter().getAccount().getId().equals(request.getAccountId())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        comment.updateContent(request.getContent());
+
+        return UpdateCommentResponse.from(comment.getId(), comment.getContent(), comment.getUpdateDate());
+
+    }
 }

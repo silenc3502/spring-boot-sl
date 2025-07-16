@@ -3,16 +3,20 @@ package com.example.springspeciallecture.comment.controller;
 import com.example.springspeciallecture.comment.controller.request_form.CreateCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.request_form.ListChildCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.request_form.ListTopLevelCommentRequestForm;
+import com.example.springspeciallecture.comment.controller.request_form.UpdateCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.response_form.CreateCommentResponseForm;
 import com.example.springspeciallecture.comment.controller.response_form.ListChildCommentResponseForm;
 import com.example.springspeciallecture.comment.controller.response_form.ListTopLevelCommentResponseForm;
+import com.example.springspeciallecture.comment.controller.response_form.UpdateCommentResponseForm;
 import com.example.springspeciallecture.comment.service.CommentService;
 import com.example.springspeciallecture.comment.service.request.CreateCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListChildCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListTopLevelCommentRequest;
+import com.example.springspeciallecture.comment.service.request.UpdateCommentRequest;
 import com.example.springspeciallecture.comment.service.response.CreateCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListChildCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListTopLevelCommentResponse;
+import com.example.springspeciallecture.comment.service.response.UpdateCommentResponse;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +57,30 @@ public class CommentController {
         ListChildCommentRequest request = requestForm.toListChildCommentRequest();
         ListChildCommentResponse response = commentService.getChildComments(request);
         return ListChildCommentResponseForm.from(response);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public void deleteComment(
+            @PathVariable Long commentId,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+        Long accountId = redisCacheService.getValueByKey(token, Long.class);
+        commentService.deleteComment(commentId, accountId);
+    }
+
+    @PutMapping("/update/{commentId}")
+    public UpdateCommentResponseForm updateComment(
+            @PathVariable Long commentId,
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody UpdateCommentRequestForm requestForm) {
+
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+        Long accountId = redisCacheService.getValueByKey(token, Long.class);
+
+        UpdateCommentRequest request = requestForm.toUpdateCommentRequest(commentId, accountId);
+        UpdateCommentResponse response = commentService.updateComment(request);
+
+        return UpdateCommentResponseForm.from(response);
     }
 }
