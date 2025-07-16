@@ -4,6 +4,12 @@ import com.example.springspeciallecture.account.entity.*;
 import com.example.springspeciallecture.account.repository.AccountRepository;
 import com.example.springspeciallecture.account_profile.entity.AccountProfile;
 import com.example.springspeciallecture.account_profile.repository.AccountProfileRepository;
+import com.example.springspeciallecture.board.entity.Board;
+import com.example.springspeciallecture.board.repository.BoardRepository;
+import com.example.springspeciallecture.board.service.request.CreateBoardRequest;
+import com.example.springspeciallecture.board.service.request.ListBoardRequest;
+import com.example.springspeciallecture.board.service.request.UpdateBoardRequest;
+import com.example.springspeciallecture.board.service.response.CreateBoardResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -18,6 +24,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +49,7 @@ public class BoardServiceTests {
     private Account account;
     private AccountProfile accountProfile;
     private Board board;
+    private List<Board> boardList;
 
     public static Account createAccountWithId(Long id) {
         AccountRoleType roleType = new AccountRoleType(RoleType.NORMAL);
@@ -65,6 +74,14 @@ public class BoardServiceTests {
 
         board = new Board("기존 제목", accountProfile, "기존 내용");
         ReflectionTestUtils.setField(board, "boardId", 1L);
+
+        boardList = IntStream.rangeClosed(1, 21)
+                .mapToObj(i -> {
+                    Board b = new Board("제목" + i, accountProfile, "내용" + i);
+                    ReflectionTestUtils.setField(b, "boardId", (long) i);
+                    return b;
+                })
+                .collect(Collectors.toList());
     }
 
     @Test
@@ -109,7 +126,7 @@ public class BoardServiceTests {
         String newTitle = "수정된 제목";
         String newContent = "수정된 내용";
 
-        var request = new com.example.monoproj.board.service.request.UpdateBoardRequest(newTitle, newContent);
+        var request = new UpdateBoardRequest(newTitle, newContent);
         var response = boardService.update(1L, 100L, request);
 
         assertEquals(newTitle, response.getTitle());
