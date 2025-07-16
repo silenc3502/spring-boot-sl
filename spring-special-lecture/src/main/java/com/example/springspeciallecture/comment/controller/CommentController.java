@@ -1,13 +1,17 @@
 package com.example.springspeciallecture.comment.controller;
 
 import com.example.springspeciallecture.comment.controller.request_form.CreateCommentRequestForm;
+import com.example.springspeciallecture.comment.controller.request_form.ListChildCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.request_form.ListTopLevelCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.response_form.CreateCommentResponseForm;
+import com.example.springspeciallecture.comment.controller.response_form.ListChildCommentResponseForm;
 import com.example.springspeciallecture.comment.controller.response_form.ListTopLevelCommentResponseForm;
 import com.example.springspeciallecture.comment.service.CommentService;
 import com.example.springspeciallecture.comment.service.request.CreateCommentRequest;
+import com.example.springspeciallecture.comment.service.request.ListChildCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListTopLevelCommentRequest;
 import com.example.springspeciallecture.comment.service.response.CreateCommentResponse;
+import com.example.springspeciallecture.comment.service.response.ListChildCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListTopLevelCommentResponse;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +43,15 @@ public class CommentController {
 
     @GetMapping("/top-level-list")
     public ListTopLevelCommentResponseForm getTopLevelComments(@ModelAttribute ListTopLevelCommentRequestForm requestForm) {
-        ListTopLevelCommentRequest request = requestForm.toRequest();
+        ListTopLevelCommentRequest request = requestForm.toListTopLevelCommentRequest();
         ListTopLevelCommentResponse response = commentService.getTopLevelComments(request);
         return ListTopLevelCommentResponseForm.from(response);
+    }
+
+    @GetMapping("/child-list")
+    public ListChildCommentResponseForm getChildComments(@ModelAttribute ListChildCommentRequestForm requestForm) {
+        ListChildCommentRequest request = requestForm.toListChildCommentRequest();
+        ListChildCommentResponse response = commentService.getChildComments(request);
+        return ListChildCommentResponseForm.from(response);
     }
 }

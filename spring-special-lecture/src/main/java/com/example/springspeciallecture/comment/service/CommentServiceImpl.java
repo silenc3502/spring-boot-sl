@@ -9,8 +9,10 @@ import com.example.springspeciallecture.board.repository.BoardRepository;
 import com.example.springspeciallecture.comment.entity.Comment;
 import com.example.springspeciallecture.comment.repository.CommentRepository;
 import com.example.springspeciallecture.comment.service.request.CreateCommentRequest;
+import com.example.springspeciallecture.comment.service.request.ListChildCommentRequest;
 import com.example.springspeciallecture.comment.service.request.ListTopLevelCommentRequest;
 import com.example.springspeciallecture.comment.service.response.CreateCommentResponse;
+import com.example.springspeciallecture.comment.service.response.ListChildCommentResponse;
 import com.example.springspeciallecture.comment.service.response.ListTopLevelCommentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -70,6 +72,25 @@ public class CommentServiceImpl implements CommentService {
                 topLevelComments.getContent(),
                 topLevelComments.getTotalPages(),
                 topLevelComments.getTotalElements()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ListChildCommentResponse getChildComments(ListChildCommentRequest request) {
+        Comment parent = commentRepository.findById(request.getParentId())
+                .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다. id=" + request.getParentId()));
+
+        Pageable pageable = PageRequest.of(
+                request.getPage() - 1,
+                request.getSize(),
+                Sort.by("createDate").descending());
+        Page<Comment> childComments = commentRepository.findByParent(parent, pageable);
+
+        return ListChildCommentResponse.from(
+                childComments.getContent(),
+                childComments.getTotalPages(),
+                childComments.getTotalElements()
         );
     }
 

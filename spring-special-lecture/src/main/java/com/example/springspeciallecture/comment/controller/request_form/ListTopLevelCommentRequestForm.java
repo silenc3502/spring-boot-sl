@@ -12,7 +12,7 @@ public class ListTopLevelCommentRequestForm {
     private final Integer page;
     private final Integer size;
 
-    public ListTopLevelCommentRequest toRequest() {
+    public ListTopLevelCommentRequest toListTopLevelCommentRequest() {
         return new ListTopLevelCommentRequest(boardId, page, size);
     }
 }
