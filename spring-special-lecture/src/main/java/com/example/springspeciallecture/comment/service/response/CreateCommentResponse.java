@@ -10,10 +10,11 @@ import java.time.LocalDateTime;
 public class CreateCommentResponse {
     private final Long commentId;
     private final String content;
-    private final LocalDateTime createDate;
+    private final LocalDateTime updateDate;
+    private final String writerNickname;
 
-    public static CreateCommentResponse from(Long commentId, String content, LocalDateTime createDate) {
-        return new CreateCommentResponse(commentId, content, createDate);
+    public static CreateCommentResponse from(Long commentId, String content, LocalDateTime updateDate, String writerNickname) {
+        return new CreateCommentResponse(commentId, content, updateDate, writerNickname);
     }
 }
 

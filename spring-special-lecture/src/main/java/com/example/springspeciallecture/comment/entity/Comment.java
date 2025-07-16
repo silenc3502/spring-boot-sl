@@ -1,6 +1,7 @@
 package com.example.springspeciallecture.comment.entity;
 
 import com.example.springspeciallecture.account.entity.Account;
+import com.example.springspeciallecture.account_profile.entity.AccountProfile;
 import com.example.springspeciallecture.board.entity.Board;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,8 +26,8 @@ public class Comment {
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    @JoinColumn(name = "account_profile_id", nullable = false)
+    private AccountProfile writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -42,9 +43,9 @@ public class Comment {
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
-    public Comment(Board board, Account account, String content, Comment parent) {
+    public Comment(Board board, AccountProfile writer, String content, Comment parent) {
         this.board = board;
-        this.account = account;
+        this.writer = writer;
         this.content = content;
         this.parent = parent;
     }

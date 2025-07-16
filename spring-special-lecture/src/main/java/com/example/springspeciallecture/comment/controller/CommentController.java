@@ -1,10 +1,14 @@
 package com.example.springspeciallecture.comment.controller;
 
 import com.example.springspeciallecture.comment.controller.request_form.CreateCommentRequestForm;
+import com.example.springspeciallecture.comment.controller.request_form.ListTopLevelCommentRequestForm;
 import com.example.springspeciallecture.comment.controller.response_form.CreateCommentResponseForm;
+import com.example.springspeciallecture.comment.controller.response_form.ListTopLevelCommentResponseForm;
 import com.example.springspeciallecture.comment.service.CommentService;
 import com.example.springspeciallecture.comment.service.request.CreateCommentRequest;
+import com.example.springspeciallecture.comment.service.request.ListTopLevelCommentRequest;
 import com.example.springspeciallecture.comment.service.response.CreateCommentResponse;
+import com.example.springspeciallecture.comment.service.response.ListTopLevelCommentResponse;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,5 +35,12 @@ public class CommentController {
         CreateCommentRequest request = requestForm.toCreateCommentRequest(accountId, boardId);
         CreateCommentResponse response = commentService.register(request);
         return CreateCommentResponseForm.from(response);
+    }
+
+    @GetMapping("/top-level-list")
+    public ListTopLevelCommentResponseForm getTopLevelComments(@ModelAttribute ListTopLevelCommentRequestForm requestForm) {
+        ListTopLevelCommentRequest request = requestForm.toRequest();
+        ListTopLevelCommentResponse response = commentService.getTopLevelComments(request);
+        return ListTopLevelCommentResponseForm.from(response);
     }
 }
