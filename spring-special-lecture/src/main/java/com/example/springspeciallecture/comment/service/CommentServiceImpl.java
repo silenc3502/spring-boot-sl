@@ -123,6 +123,5 @@ public class CommentServiceImpl implements CommentService {
         comment.updateContent(request.getContent());
 
         return UpdateCommentResponse.from(comment.getId(), comment.getContent(), comment.getUpdateDate());
-
     }
 }

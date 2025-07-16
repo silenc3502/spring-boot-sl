@@ -1,6 +1,6 @@
 package com.example.springspeciallecture.comment.service.request;
 
-import com.example.springspeciallecture.account.entity.Account;
+import com.example.springspeciallecture.account_profile.entity.AccountProfile;
 import com.example.springspeciallecture.board.entity.Board;
 import com.example.springspeciallecture.comment.entity.Comment;
 import lombok.Getter;
@@ -14,7 +14,7 @@ public class CreateCommentRequest {
     private final String content;
     private final Long parentId;
 
-    public Comment toComment(Board board, Account account, Comment parent) {
-        return new Comment(board, account, content, parent);
+    public Comment toComment(Board board, AccountProfile accountProfile, Comment parent) {
+        return new Comment(board, accountProfile, content, parent);
     }
 }
