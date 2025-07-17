@@ -30,6 +30,8 @@ dependencies {
 
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
