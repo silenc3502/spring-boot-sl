@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 
 // for i in {1..6}; do curl http://192.168.0.107:7777/webflux/thread-test & done
+// for i in {1..1000}; do curl http://192.168.0.107:7777/webflux/thread-test & done
 @Slf4j
 @RestController
 @RequestMapping("/webflux")
