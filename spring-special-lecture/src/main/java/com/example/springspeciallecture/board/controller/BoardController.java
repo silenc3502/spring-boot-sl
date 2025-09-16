@@ -12,6 +12,7 @@ import com.example.springspeciallecture.board.service.response.CreateBoardRespon
 import com.example.springspeciallecture.board.service.response.ListBoardResponse;
 import com.example.springspeciallecture.board.service.response.ReadBoardResponse;
 import com.example.springspeciallecture.board.service.response.UpdateBoardResponse;
+import com.example.springspeciallecture.notification.service.SseRealTimeNotificationService;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.List;
 public class BoardController {
     final private BoardService boardService;
     final private RedisCacheService redisCacheService;
+    final private SseRealTimeNotificationService notificationService;
 
     @GetMapping("/list")
     public ListBoardResponseForm boardList(@ModelAttribute ListBoardRequestForm requestForm) {
@@ -53,6 +55,10 @@ public class BoardController {
         log.info("accountId -> {}", accountId);
 
         CreateBoardResponse response = boardService.register(createBoardRequestForm.toCreateBoardRequest(accountId));
+
+        String message = "[새 게시글] " + response.getTitle() + " 가 등록되었습니다.";
+        notificationService.notify(accountId, message);
+
         return CreateBoardResponseForm.from(response);
     }
 
