@@ -1,5 +1,6 @@
 package com.example.springspeciallecture.reactive_board.service.response;
 
+import com.example.springspeciallecture.account_profile.entity.AccountProfile;
 import com.example.springspeciallecture.reactive_board.entity.ReactiveBoard;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,25 +15,32 @@ import java.util.stream.Collectors;
 @Getter
 @RequiredArgsConstructor
 public class ListReactiveBoardResponse {
-    private final List<ReactiveBoard> boardList;
+    private final List<Map<String, Object>> boardList;
     private final long totalItems;
     private final int totalPages;
 
-    // 날짜를 포맷하여 반환하는 메소드
-    public List<Map<String, Object>> getReactiveBoardListWithNicknames() {
-        return boardList.stream().map(board -> {
-            Map<String, Object> boardMap = new HashMap<>();
-            boardMap.put("boardId", board.getBoardId());
-            boardMap.put("title", board.getTitle());
-            boardMap.put("content", board.getContent());
-            boardMap.put("nickname", board.getWriter().getNickname());
-            boardMap.put("createDate", formatDate(board.getCreateDate()));  // 날짜 포맷 적용
-            return boardMap;
-        }).collect(Collectors.toList());
+    public static ListReactiveBoardResponse from(List<ReactiveBoard> boards,
+                                                 Map<Long, AccountProfile> profileMap,
+                                                 int perPage) {
+        List<Map<String, Object>> boardList = boards.stream()
+                .map(board -> Map.<String, Object>of(
+                        "boardId", board.getBoardId(),
+                        "title", board.getTitle(),
+                        "content", board.getContent(),
+                        "nickname", profileMap.get(board.getWriterId()) != null
+                                ? profileMap.get(board.getWriterId()).getNickname()
+                                : "Unknown",
+                        "createDate", formatDate(board.getCreateDate())
+                ))
+                .collect(Collectors.toList());
+
+        long totalItems = boardList.size();
+        int totalPages = (int) Math.ceil((double) totalItems / perPage);
+
+        return new ListReactiveBoardResponse(boardList, totalItems, totalPages);
     }
 
-    // 날짜 포맷팅 함수
-    private String formatDate(LocalDateTime dateTime) {
+    private static String formatDate(LocalDateTime dateTime) {
         if (dateTime == null) return "";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return dateTime.format(formatter);

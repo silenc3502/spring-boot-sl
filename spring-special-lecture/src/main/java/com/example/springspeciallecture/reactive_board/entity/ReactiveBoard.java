@@ -18,7 +18,7 @@ public class ReactiveBoard {
 
     private String title;
 
-    private Long writerId; // R2DBC에서는 ManyToOne 불가 → FK만 저장
+    private Long writerId; // R2DBC에서는 ManyToOne 불가 -> FK만 저장
 
     private String content;
 

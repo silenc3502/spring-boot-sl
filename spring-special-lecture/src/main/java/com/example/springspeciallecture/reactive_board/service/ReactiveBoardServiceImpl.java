@@ -1,6 +1,7 @@
 package com.example.springspeciallecture.reactive_board.service;
 
 import com.example.springspeciallecture.account_profile.repository.ReactiveAccountProfileRepository;
+import com.example.springspeciallecture.reactive_board.entity.ReactiveBoard;
 import com.example.springspeciallecture.reactive_board.repository.ReactiveBoardRepository;
 import com.example.springspeciallecture.reactive_board.service.request.ListReactiveBoardRequest;
 import com.example.springspeciallecture.reactive_board.service.response.ListReactiveBoardResponse;
@@ -25,23 +26,13 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
     @Override
     public Mono<ListReactiveBoardResponse> list(ListReactiveBoardRequest request) {
         return boardRepository.findAll()
-                .flatMap(board ->
-                        accountProfileRepository.findById(board.getWriterId())
-                                .map(profile -> Map.of(
-                                        "boardId", board.getBoardId(),
-                                        "title", board.getTitle(),
-                                        "content", board.getContent(),
-                                        "nickname", profile.getNickname(),
-                                        "createDate", formatDate(board.getCreateDate())
-                                ))
-                )
-                .collectList() // Mono<List<ReactiveBoard>>
-                .map(boardList -> {
-                    long totalItems = boardList.size();
-                    int totalPages = (int) Math.ceil((double) totalItems / request.getPerPage());
-
-                    return new ListReactiveBoardResponse(boardList, totalItems, totalPages);
-                });
+                .collectList()
+                .flatMap(boardList ->
+                        accountProfileRepository.findAllById(
+                                        boardList.stream().map(ReactiveBoard::getWriterId).toList()
+                                ).collectMap(profile -> profile.getAccount().getId())
+                                .map(profileMap -> ListReactiveBoardResponse.from(boardList, profileMap, request.getPerPage()))
+                );
     }
 
     private String formatDate(LocalDateTime dateTime) {

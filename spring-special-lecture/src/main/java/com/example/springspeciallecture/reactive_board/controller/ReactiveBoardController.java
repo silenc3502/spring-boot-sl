@@ -22,10 +22,6 @@ public class ReactiveBoardController {
     @GetMapping("/list")
     public Mono<ListReactiveBoardResponseForm> boardList(@ModelAttribute ListReactiveBoardRequestForm requestForm) {
         return reactiveBoardService.list(requestForm.toListReactiveBoardRequest())
-                .map(response -> ListReactiveBoardResponseForm.from(
-                        List.of(response),
-                        (int) response.getTotalItems(),
-                        response.getTotalPages()
-                ));
+                .map(ListReactiveBoardResponseForm::from);
     }
 }
