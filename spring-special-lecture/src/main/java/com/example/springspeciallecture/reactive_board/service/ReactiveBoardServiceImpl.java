@@ -36,27 +36,23 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
 
     @Override
     public Mono<ListReactiveBoardResponse> list(ListReactiveBoardRequest request) {
-        return reactiveBoardRepository.findByPage(request.getPage(), request.getPerPage())
+        int offset = (request.getPage() - 1) * request.getPerPage();
+
+        return reactiveBoardRepository.findByPage(offset, request.getPerPage())
                 .collectList()
                 .flatMap(boards -> {
-                    // writerId 추출
                     List<Long> writerIds = boards.stream()
                             .map(ReactiveBoard::getWriterId)
                             .distinct()
                             .toList();
 
-                    // JPA 호출을 별도 쓰레드 풀에서 실행
                     return Mono.fromCallable(() -> accountProfileRepository.findAllById(writerIds))
                             .subscribeOn(Schedulers.boundedElastic())
                             .map(accountProfiles -> {
                                 Map<Long, AccountProfile> profileMap = accountProfiles.stream()
                                         .collect(Collectors.toMap(AccountProfile::getId, p -> p));
 
-                                return ListReactiveBoardResponse.from(
-                                        boards,
-                                        profileMap,
-                                        request.getPerPage()
-                                );
+                                return ListReactiveBoardResponse.from(boards, profileMap, request.getPerPage());
                             });
                 });
     }
