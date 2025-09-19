@@ -3,15 +3,18 @@ package com.example.springspeciallecture.reactive_board.controller;
 import com.example.springspeciallecture.notification.service.SseRealTimeNotificationService;
 import com.example.springspeciallecture.reactive_board.controller.request_form.CreateReactiveBoardRequestForm;
 import com.example.springspeciallecture.reactive_board.controller.request_form.ListReactiveBoardRequestForm;
+import com.example.springspeciallecture.reactive_board.controller.request_form.UpdateReactiveBoardRequestForm;
 import com.example.springspeciallecture.reactive_board.controller.response_form.CreateReactiveBoardResponseForm;
 import com.example.springspeciallecture.reactive_board.controller.response_form.ListReactiveBoardResponseForm;
 import com.example.springspeciallecture.reactive_board.controller.response_form.ReadReactiveBoardResponseForm;
+import com.example.springspeciallecture.reactive_board.controller.response_form.UpdateReactiveBoardResponseForm;
 import com.example.springspeciallecture.reactive_board.service.ReactiveBoardService;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @RestController
@@ -53,5 +56,28 @@ public class ReactiveBoardController {
     public Mono<ReadReactiveBoardResponseForm> readBoard(@PathVariable("boardId") Long boardId) {
         return reactiveBoardService.read(boardId)
                 .map(ReadReactiveBoardResponseForm::from);
+    }
+
+    @PutMapping("/update/{boardId}")
+    public Mono<UpdateReactiveBoardResponseForm> updateBoard(
+            @PathVariable("boardId") Long boardId,
+            @RequestBody UpdateReactiveBoardRequestForm updateReactiveBoardRequestForm,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        log.info("modifyBoard(): {}, boardId: {}", updateReactiveBoardRequestForm, boardId);
+
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+
+        return Mono.fromCallable(() -> redisCacheService.getValueByKey(token, Long.class))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(accountId -> {
+                    log.info("accountId -> {}", accountId);
+                    return reactiveBoardService.update(
+                            boardId,
+                            accountId,
+                            updateReactiveBoardRequestForm.toUpdateReactiveBoardRequest()
+                    );
+                })
+                .map(UpdateReactiveBoardResponseForm::from);
     }
 }

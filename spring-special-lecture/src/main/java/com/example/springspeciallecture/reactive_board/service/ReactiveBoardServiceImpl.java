@@ -10,9 +10,11 @@ import com.example.springspeciallecture.reactive_board.entity.ReactiveBoard;
 import com.example.springspeciallecture.reactive_board.repository.ReactiveBoardRepository;
 import com.example.springspeciallecture.reactive_board.service.request.CreateReactiveBoardRequest;
 import com.example.springspeciallecture.reactive_board.service.request.ListReactiveBoardRequest;
+import com.example.springspeciallecture.reactive_board.service.request.UpdateReactiveBoardRequest;
 import com.example.springspeciallecture.reactive_board.service.response.CreateReactiveBoardResponse;
 import com.example.springspeciallecture.reactive_board.service.response.ListReactiveBoardResponse;
 import com.example.springspeciallecture.reactive_board.service.response.ReadReactiveBoardResponse;
+import com.example.springspeciallecture.reactive_board.service.response.UpdateReactiveBoardResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -84,6 +86,33 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
                                             .map(AccountProfile::getNickname)
                                             .orElse("Unknown");
                                     return ReadReactiveBoardResponse.from(board, nickname);
+                                })
+                                .subscribeOn(Schedulers.boundedElastic())
+                );
+    }
+
+    @Override
+    public Mono<UpdateReactiveBoardResponse> update(Long boardId, Long accountId, UpdateReactiveBoardRequest request) {
+        return reactiveBoardRepository.findById(boardId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Board not found")))
+                .flatMap(board -> {
+                    if (!board.getWriterId().equals(accountId)) {
+                        return Mono.error(new RuntimeException("권한이 없습니다."));
+                    }
+
+                    // 값 갱신
+                    board.changeTitle(request.getTitle());
+                    board.changeContent(request.getContent());
+
+                    // R2DBC 저장
+                    return reactiveBoardRepository.save(board);
+                })
+
+                .flatMap(savedBoard ->
+                        Mono.fromCallable(() -> {
+                                    AccountProfile profile = accountProfileRepository.findById(savedBoard.getWriterId())
+                                            .orElseThrow(() -> new RuntimeException("작성자 프로필 없음"));
+                                    return UpdateReactiveBoardResponse.from(savedBoard, profile.getNickname());
                                 })
                                 .subscribeOn(Schedulers.boundedElastic())
                 );
