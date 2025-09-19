@@ -1,10 +1,16 @@
 package com.example.springspeciallecture.reactive_board.service;
 
+import com.example.springspeciallecture.account.entity.Account;
+import com.example.springspeciallecture.account.repository.AccountRepository;
 import com.example.springspeciallecture.account_profile.entity.AccountProfile;
 import com.example.springspeciallecture.account_profile.repository.AccountProfileRepository;
+import com.example.springspeciallecture.board.entity.Board;
+import com.example.springspeciallecture.board.service.response.CreateBoardResponse;
 import com.example.springspeciallecture.reactive_board.entity.ReactiveBoard;
 import com.example.springspeciallecture.reactive_board.repository.ReactiveBoardRepository;
+import com.example.springspeciallecture.reactive_board.service.request.CreateReactiveBoardRequest;
 import com.example.springspeciallecture.reactive_board.service.request.ListReactiveBoardRequest;
+import com.example.springspeciallecture.reactive_board.service.response.CreateReactiveBoardResponse;
 import com.example.springspeciallecture.reactive_board.service.response.ListReactiveBoardResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +29,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReactiveBoardServiceImpl implements ReactiveBoardService {
 
-    final private ReactiveBoardRepository reactiveBoardRepository;
+    final private AccountRepository accountRepository;
     final private AccountProfileRepository accountProfileRepository;
+
+    final private ReactiveBoardRepository reactiveBoardRepository;
 
     @Override
     public Mono<ListReactiveBoardResponse> list(ListReactiveBoardRequest request) {
@@ -53,9 +61,20 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
                 });
     }
 
-    private String formatDate(LocalDateTime dateTime) {
-        if (dateTime == null) return "";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return dateTime.format(formatter);
+    @Override
+    public Mono<CreateReactiveBoardResponse> register(CreateReactiveBoardRequest request) {
+        log.info("accountId: {}", request.getAccountId());
+
+        return Mono.fromCallable(() -> accountRepository.findById(request.getAccountId())
+                        .orElseThrow(() -> new RuntimeException("Account 존재하지 않음")))
+                .flatMap(account -> {
+                    AccountProfile profile = accountProfileRepository.findByAccount(account)
+                            .orElseThrow(() -> new RuntimeException("AccountProfile not found"));
+
+                    ReactiveBoard board = request.toReactiveBoard(profile.getId());
+
+                    return reactiveBoardRepository.save(board)
+                            .map(savedBoard -> CreateReactiveBoardResponse.from(savedBoard, profile.getNickname()));
+                });
     }
 }
