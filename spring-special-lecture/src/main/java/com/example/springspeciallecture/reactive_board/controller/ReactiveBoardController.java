@@ -5,6 +5,7 @@ import com.example.springspeciallecture.reactive_board.controller.request_form.C
 import com.example.springspeciallecture.reactive_board.controller.request_form.ListReactiveBoardRequestForm;
 import com.example.springspeciallecture.reactive_board.controller.response_form.CreateReactiveBoardResponseForm;
 import com.example.springspeciallecture.reactive_board.controller.response_form.ListReactiveBoardResponseForm;
+import com.example.springspeciallecture.reactive_board.controller.response_form.ReadReactiveBoardResponseForm;
 import com.example.springspeciallecture.reactive_board.service.ReactiveBoardService;
 import com.example.springspeciallecture.redis_cache.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,11 @@ public class ReactiveBoardController {
                     notificationService.notify(accountId, message);
                 })
                 .map(CreateReactiveBoardResponseForm::from);
+    }
+
+    @GetMapping("/read/{boardId}")
+    public Mono<ReadReactiveBoardResponseForm> readBoard(@PathVariable("boardId") Long boardId) {
+        return reactiveBoardService.read(boardId)
+                .map(ReadReactiveBoardResponseForm::from);
     }
 }

@@ -12,6 +12,7 @@ import com.example.springspeciallecture.reactive_board.service.request.CreateRea
 import com.example.springspeciallecture.reactive_board.service.request.ListReactiveBoardRequest;
 import com.example.springspeciallecture.reactive_board.service.response.CreateReactiveBoardResponse;
 import com.example.springspeciallecture.reactive_board.service.response.ListReactiveBoardResponse;
+import com.example.springspeciallecture.reactive_board.service.response.ReadReactiveBoardResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -72,5 +73,19 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
                     return reactiveBoardRepository.save(board)
                             .map(savedBoard -> CreateReactiveBoardResponse.from(savedBoard, profile.getNickname()));
                 });
+    }
+
+    @Override
+    public Mono<ReadReactiveBoardResponse> read(Long boardId) {
+        return reactiveBoardRepository.findById(boardId)
+                .flatMap(board ->
+                        Mono.fromCallable(() -> {
+                                    String nickname = accountProfileRepository.findById(board.getWriterId())
+                                            .map(AccountProfile::getNickname)
+                                            .orElse("Unknown");
+                                    return ReadReactiveBoardResponse.from(board, nickname);
+                                })
+                                .subscribeOn(Schedulers.boundedElastic())
+                );
     }
 }
