@@ -1,6 +1,7 @@
 package com.example.springspeciallecture.reactive_board.service;
 
-import com.example.springspeciallecture.account_profile.repository.ReactiveAccountProfileRepository;
+import com.example.springspeciallecture.account_profile.entity.AccountProfile;
+import com.example.springspeciallecture.account_profile.repository.AccountProfileRepository;
 import com.example.springspeciallecture.reactive_board.entity.ReactiveBoard;
 import com.example.springspeciallecture.reactive_board.repository.ReactiveBoardRepository;
 import com.example.springspeciallecture.reactive_board.service.request.ListReactiveBoardRequest;
@@ -13,26 +14,43 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReactiveBoardServiceImpl implements ReactiveBoardService {
 
-    final private ReactiveBoardRepository boardRepository;
-    final private ReactiveAccountProfileRepository accountProfileRepository;
+    final private ReactiveBoardRepository reactiveBoardRepository;
+    final private AccountProfileRepository accountProfileRepository;
 
     @Override
     public Mono<ListReactiveBoardResponse> list(ListReactiveBoardRequest request) {
-        return boardRepository.findAll()
+        return reactiveBoardRepository.findByPage(request.getPage(), request.getPerPage())
                 .collectList()
-                .flatMap(boardList ->
-                        accountProfileRepository.findAllById(
-                                        boardList.stream().map(ReactiveBoard::getWriterId).toList()
-                                ).collectMap(profile -> profile.getAccount().getId())
-                                .map(profileMap -> ListReactiveBoardResponse.from(boardList, profileMap, request.getPerPage()))
-                );
+                .flatMap(boards -> {
+                    // writerId 추출
+                    List<Long> writerIds = boards.stream()
+                            .map(ReactiveBoard::getWriterId)
+                            .distinct()
+                            .toList();
+
+                    // JPA 호출을 별도 쓰레드 풀에서 실행
+                    return Mono.fromCallable(() -> accountProfileRepository.findAllById(writerIds))
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .map(accountProfiles -> {
+                                Map<Long, AccountProfile> profileMap = accountProfiles.stream()
+                                        .collect(Collectors.toMap(AccountProfile::getId, p -> p));
+
+                                return ListReactiveBoardResponse.from(
+                                        boards,
+                                        profileMap,
+                                        request.getPerPage()
+                                );
+                            });
+                });
     }
 
     private String formatDate(LocalDateTime dateTime) {
