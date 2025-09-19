@@ -80,4 +80,21 @@ public class ReactiveBoardController {
                 })
                 .map(UpdateReactiveBoardResponseForm::from);
     }
+
+    @DeleteMapping("/delete/{boardId}")
+    public Mono<Void> deleteBoard(
+            @PathVariable("boardId") Long boardId,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        log.info("deleteBoard(): {}", boardId);
+
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+
+        return Mono.fromCallable(() -> redisCacheService.getValueByKey(token, Long.class))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(accountId -> {
+                    log.info("accountId -> {}", accountId);
+                    return reactiveBoardService.delete(boardId, accountId);
+                });
+    }
 }

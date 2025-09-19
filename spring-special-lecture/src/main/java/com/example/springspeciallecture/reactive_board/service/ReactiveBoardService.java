@@ -14,4 +14,5 @@ public interface ReactiveBoardService {
     Mono<CreateReactiveBoardResponse> register(CreateReactiveBoardRequest request);
     Mono<ReadReactiveBoardResponse> read(Long boardId);
     Mono<UpdateReactiveBoardResponse> update(Long boardId, Long accountId, UpdateReactiveBoardRequest request);
+    Mono<Void> delete(Long boardId, Long accountId);
 }

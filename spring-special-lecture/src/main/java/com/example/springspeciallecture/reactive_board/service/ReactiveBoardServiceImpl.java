@@ -117,4 +117,16 @@ public class ReactiveBoardServiceImpl implements ReactiveBoardService {
                                 .subscribeOn(Schedulers.boundedElastic())
                 );
     }
+
+    @Override
+    public Mono<Void> delete(Long boardId, Long accountId) {
+        return reactiveBoardRepository.findById(boardId)
+                .switchIfEmpty(Mono.error(new RuntimeException("게시글을 찾을 수 없음")))
+                .flatMap(board -> {
+                    if (!board.getWriterId().equals(accountId)) {
+                        return Mono.error(new RuntimeException("삭제 권한 없음"));
+                    }
+                    return reactiveBoardRepository.delete(board);
+                });
+    }
 }
