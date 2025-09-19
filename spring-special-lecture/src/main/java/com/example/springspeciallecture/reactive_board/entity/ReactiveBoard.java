@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @ToString
 @NoArgsConstructor
-@Table("reactive_board")
+@Table("REACTIVE_BOARD")
 public class ReactiveBoard {
 
     @Id

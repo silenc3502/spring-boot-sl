@@ -30,7 +30,7 @@ public class KakaoAuthenticationController {
     final private RedisCacheService redisCacheService;
 
     @GetMapping("/login")
-    @Transactional
+    @Transactional(transactionManager = "jpaTransactionManager")
     public KakaoLoginResponseForm requestAccessToken(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
         log.info("requestAccessToken(): code {}", code);
         try {
