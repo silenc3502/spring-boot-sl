@@ -36,7 +36,7 @@ spring:
   sql:
     init:
       mode: always
-      platform: h2
+      platform: ${DATABASE_PLATFORM}
 
   data:
     redis:
