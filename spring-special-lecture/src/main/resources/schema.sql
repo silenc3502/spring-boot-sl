@@ -1,4 +1,4 @@
-CREATE TABLE reactive_board (
+CREATE TABLE IF NOT EXISTS reactive_board (
     board_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255),
     writer_id BIGINT,
