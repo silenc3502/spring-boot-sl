@@ -11,6 +11,7 @@ public class JobRegistry {
         switch (jobType) {
             case EMAIL_NOTIFICATION -> executionService.executeEmailNotification();
             case DATA_SYNC -> executionService.executeDataSync();
+            case MONTHLY_SALES -> executionService.aggregateMontlySales();
         }
     }
 }
