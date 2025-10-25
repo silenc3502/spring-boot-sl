@@ -25,7 +25,10 @@ import javax.sql.DataSource;
                 "com.example.springspeciallecture.comment.repository",
                 "com.example.springspeciallecture.favorites.repository",
                 "com.example.springspeciallecture.subscribe.repository",
-                "com.example.springspeciallecture.game_chip.repository"
+                "com.example.springspeciallecture.game_chip.repository",
+                "com.example.springspeciallecture.orders.repository",
+                "com.example.springspeciallecture.payments.repository",
+                "com.example.springspeciallecture.aggregate.repository"
         },
         entityManagerFactoryRef = "jpaEntityManagerFactory",
         transactionManagerRef = "jpaTransactionManager"
@@ -65,7 +68,10 @@ public class JpaConfig {
                         "com.example.springspeciallecture.comment.entity",
                         "com.example.springspeciallecture.favorites.entity",
                         "com.example.springspeciallecture.subscribe.entity",
-                        "com.example.springspeciallecture.game_chip.entity"
+                        "com.example.springspeciallecture.game_chip.entity",
+                        "com.example.springspeciallecture.orders.entity",
+                        "com.example.springspeciallecture.payments.entity",
+                        "com.example.springspeciallecture.aggregate.entity"
                 )
                 .properties(jpaProperties.getProperties())
                 .build();
