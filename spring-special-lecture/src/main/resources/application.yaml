@@ -54,3 +54,18 @@ kakao:
   redirect-uri: ${KAKAO_REDIRECT_URI}
   token-request-uri: ${KAKAO_TOKEN_REQUEST_URI}
   user-info-request-uri: ${KAKAO_USER_INFO_REQUEST_URI}
+
+# ================================
+# Micrometer + Prometheus 설정
+# ================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus   # Prometheus 엔드포인트 포함
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    enable:
+      all: true                            # 모든 기본 지표 활성화

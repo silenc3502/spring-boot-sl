@@ -34,6 +34,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
     testImplementation 'io.projectreactor:reactor-test'
 
+    // Micrometer Prometheus registry
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Spring Boot Actuator (필수)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
